@@ -26,7 +26,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/officegate/css/officegate.css"
-# app_include_js = "/assets/officegate/js/officegate.js"
+app_include_js = ["/assets/officegate/js/quotations.js","/assets/officegate/js/custom.js",]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/officegate/css/officegate.css"
@@ -144,6 +144,13 @@ app_license = "mit"
 # 		"on_trash": "method"
 # 	}
 # }
+
+doc_events = {
+    "Delivery Note": {
+        "validate": "officegate.api.validate_no_duplicate_against_invoice",
+    }
+}
+
 
 # Scheduled Tasks
 # ---------------

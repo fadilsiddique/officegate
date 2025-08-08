@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Statement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+            background: #fff;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 15mm;
+            background: white;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .company-logo img {
+            max-width: 60px;
+            max-height: 60px;
+            margin-right: 10px;
+        }
+
+        .logo-placeholder {
+            width: 50px;
+            height: 50px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .company-details h1 {
+            font-size: 16px;
+            color: #2c5cc5;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+
+        .company-details p {
+            font-size: 10px;
+            color: #666;
+            margin: 1px 0;
+        }
+
+        .statement-title {
+            text-align: right;
+            flex: 1;
+        }
+
+        .statement-title h2 {
+            font-size: 18px;
+            color: #2c5cc5;
+            margin-bottom: 5px;
+        }
+
+        .statement-date {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .customer-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .customer-info,
+        .sales-info {
+            flex: 1;
+        }
+
+        .customer-info h3 {
+            font-size: 11px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .customer-details p,
+        .sales-details p {
+            font-size: 10px;
+            margin: 2px 0;
+            color: #555;
+        }
+
+        .sales-info {
+            text-align: right;
+            margin-left: 50px;
+        }
+
+        .statement-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 10px;
+        }
+
+        .statement-table th {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .statement-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .statement-table td.number {
+            text-align: right;
+        }
+
+        .statement-table td.center {
+            text-align: center;
+        }
+
+        .statement-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .summary-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .summary-table {
+            border-collapse: collapse;
+            font-size: 11px;
+            min-width: 200px;
+        }
+
+        .summary-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .summary-table .label {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .summary-table .amount {
+            text-align: right;
+            min-width: 100px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .signature-section {
+            text-align: center;
+        }
+
+        .signature-line {
+            width: 200px;
+            border-bottom: 1px solid #333;
+            margin: 30px 0 5px 0;
+        }
+
+        .company-stamp {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #666;
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        .balance-positive {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        .balance-negative {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .opening-balance {
+            background-color: #e3f2fd !important;
+            font-weight: bold;
+        }
+
+        @media print {
+            .container {
+                margin: 0;
+                padding: 10mm;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="company-info">
+                <div class="company-logo">
+                    <!-- Replace with actual logo -->
+                    <div class="logo-placeholder">
+                        <span>LOGO</span>
+                    </div>
+                    <div class="company-details">
+                        <h1>CAPITAL ONE</h1>
+                        <p>office furniture</p>
+                    </div>
+                </div>
+            </div>
+            <div class="statement-title">
+                <h2>Customer Statement</h2>
+                <div class="statement-date">
+                    <strong>Date:</strong> {{ frappe.format_date(filters.to_date) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Information Section -->
+        <div class="customer-section">
+            <div class="customer-info">
+                <h3>C/Name: {{ customer_details.customer_name or doc.customer_name }}</h3>
+                <p><strong>Tel:</strong> {{ customer_details.contact_details.phone or "N/A" }}</p>
+                <p><strong>Mob:</strong> {{ customer_details.contact_details.mobile or "N/A" }}</p>
+                <p><strong>Email:</strong> {{ customer_details.contact_details.email or "N/A" }}</p>
+                <p><strong>Location:</strong> {{ customer_details.address_details.city or "N/A" }}</p>
+            </div>
+            <div class="sales-info">
+                <p><strong>Sales:</strong> {{ frappe.session.user }}</p>
+                <p><strong>Mob:</strong> {{ frappe.db.get_value("User", frappe.session.user, "mobile_no") or "N/A" }}
+                </p>
+                <p><strong>Email:</strong> {{ frappe.session.user }}</p>
+            </div>
+        </div>
+
+        <!-- Statement Table -->
+        <table class="statement-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Date</th>
+                    <th style="width: 120px;">Our Ref</th>
+                    <th style="width: 120px;">Your Ref</th>
+                    <th style="width: 80px;">Debit</th>
+                    <th style="width: 80px;">Credit</th>
+                    <th style="width: 80px;">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr {% if "Opening Balance" in (row.our_ref or "" ) %}class="opening-balance" {% endif %}>
+                    <td class="center">{{ frappe.format_date(row.date) if row.date else "" }}</td>
+                    <td>{{ row.our_ref or "" }}</td>
+                    <td>{{ row.your_ref or "" }}</td>
+                    <td class="number">{{ "%.2f"|format(row.debit or 0) if (row.debit or 0) > 0 else "" }}</td>
+                    <td class="number">{{ "%.2f"|format(row.credit or 0) if (row.credit or 0) > 0 else "" }}</td>
+                    <td
+                        class="number {% if (row.balance or 0) > 0 %}balance-positive{% elif (row.balance or 0) < 0 %}balance-negative{% endif %}">
+                        {{ "%.2f"|format(row.balance or 0) }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <table class="summary-table">
+                <tr>
+                    <td class="label">Total:</td>
+                    <td class="amount">{{ "%.2f"|format(total_debit or 0) }}</td>
+                    <td class="amount">{{ "%.2f"|format(total_credit or 0) }}</td>
+                    <td class="amount">{{ "%.2f"|format(outstanding_balance or 0) }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Outstanding:</td>
+                    <td class="amount" colspan="2">{{ "%.2f"|format(outstanding_balance or 0) }}</td>
+                    <td class="amount"></td>
+                </tr>
+                <tr>
+                    <td class="label">Total Invoices:</td>
+                    <td class="amount" colspan="2">{{ invoice_count or 0 }}</td>
+                    <td class="amount"></td>
+                </tr>
+                <tr>
+                    <td class="label">Total Outstanding:</td>
+                    <td class="amount" colspan="2">{{ "%.2f"|format(outstanding_balance or 0) }}</td>
+                    <td class="amount">{{ "%.2f"|format(outstanding_balance or 0) }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <div class="signature-section">
+                <div class="company-stamp">
+                    <div style="text-align: center;">
+                        <div style="font-size: 8px; margin-bottom: 5px;">CAPITAL ONE</div>
+                        <div style="font-size: 6px;">OFFICE FURNITURE</div>
+                        <div style="font-size: 6px; margin-top: 5px;">{{ frappe.utils.now() }}</div>
+                    </div>
+                </div>
+                <div class="signature-line"></div>
+                <p style="font-size: 10px; margin-top: 5px;">Authorized Signature</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-populate data when print format loads
+        document.addEventListener('DOMContentLoaded', function () {
+            // This script will be executed when the print format loads
+            // You can add any dynamic content loading here
+        });
+    </script>
+</body>
+
+</html>
