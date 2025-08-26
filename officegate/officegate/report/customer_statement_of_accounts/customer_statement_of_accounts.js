@@ -18,7 +18,6 @@ frappe.query_reports["Customer Statement of Accounts"] = {
 			"options": "Customer",
 			"reqd": 1,
 			"on_change": function () {
-				// Auto-populate customer details when customer is selected
 				if (frappe.query_report.get_filter_value('customer')) {
 					frappe.call({
 						method: "officegate.officegate.report.customer_statement_of_accounts.customer_statement_of_accounts.get_customer_details",
@@ -93,6 +92,144 @@ frappe.query_reports["Customer Statement of Accounts"] = {
 		return value;
 	},
 
+	// Custom print HTML function
+	"get_print_html": function (columns, data, filters, summary) {
+		let customer_details = frappe.query_report.customer_details || {};
+
+		// Calculate totals
+		let total_debit = 0;
+		let total_credit = 0;
+		let outstanding_balance = 0;
+
+		data.forEach(row => {
+			total_debit += (row.debit || 0);
+			total_credit += (row.credit || 0);
+			outstanding_balance = row.balance || 0;
+		});
+
+		// Generate HTML
+		let html = `
+		<style>
+			@page { size: A4; margin: 10mm; }
+			* { margin: 0; padding: 0; box-sizing: border-box; }
+			body { font-family: Arial, sans-serif; font-size: 11px; line-height: 1.4; color: #333; }
+			.container { max-width: 210mm; margin: 0 auto; padding: 15mm; }
+			.header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+			.company-info { flex: 1; }
+			.company-logo { display: flex; align-items: center; margin-bottom: 10px; }
+			.logo-placeholder { width: 50px; height: 50px; background: #f0f0f0; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 10px; color: #666; }
+			.company-details h1 { font-size: 16px; color: #2c5cc5; margin-bottom: 2px; font-weight: bold; }
+			.company-details p { font-size: 10px; color: #666; margin: 1px 0; }
+			.statement-title { text-align: right; flex: 1; }
+			.statement-title h2 { font-size: 18px; color: #2c5cc5; margin-bottom: 5px; }
+			.statement-date { font-size: 10px; color: #666; }
+			.customer-section { display: flex; justify-content: space-between; margin-bottom: 20px; }
+			.customer-info, .sales-info { flex: 1; }
+			.customer-info h3 { font-size: 11px; margin-bottom: 8px; color: #333; }
+			.customer-details p, .sales-details p { font-size: 10px; margin: 2px 0; color: #555; }
+			.sales-info { text-align: right; margin-left: 50px; }
+			.statement-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
+			.statement-table th { background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; }
+			.statement-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+			.statement-table td.number { text-align: right; }
+			.statement-table td.center { text-align: center; }
+			.statement-table tr:nth-child(even) { background-color: #fafafa; }
+			.summary-section { display: flex; justify-content: flex-end; margin-top: 20px; }
+			.summary-table { border-collapse: collapse; font-size: 11px; min-width: 200px; }
+			.summary-table td { border: 1px solid #ddd; padding: 8px; }
+			.summary-table .label { background-color: #f8f9fa; font-weight: bold; text-align: right; }
+			.summary-table .amount { text-align: right; min-width: 100px; }
+			.balance-positive { color: #d32f2f; font-weight: bold; }
+			.balance-negative { color: #2e7d32; font-weight: bold; }
+			.opening-balance { background-color: #e3f2fd !important; font-weight: bold; }
+		</style>
+		
+		<div class="container">
+			<!-- Header Section -->
+			<div class="header">
+				<div class="company-info">
+					<div class="company-logo">
+						<div class="logo-placeholder">LOGO</div>
+						<div class="company-details">
+							<h1>CAPITAL ONE</h1>
+							<p>office furniture</p>
+						</div>
+					</div>
+				</div>
+				<div class="statement-title">
+					<h2>Customer Statement</h2>
+					<div class="statement-date">
+						<strong>Date:</strong> ${frappe.datetime.str_to_user(filters.to_date)}
+					</div>
+				</div>
+			</div>
+
+			<!-- Customer Information Section -->
+			<div class="customer-section">
+				<div class="customer-info">
+					<h3>C/Name: ${customer_details.customer_name || ''}</h3>
+					<p><strong>Tel:</strong> ${customer_details.contact_details?.phone || 'N/A'}</p>
+					<p><strong>Mob:</strong> ${customer_details.contact_details?.mobile || 'N/A'}</p>
+					<p><strong>Email:</strong> ${customer_details.contact_details?.email || 'N/A'}</p>
+					<p><strong>Location:</strong> ${customer_details.address_details?.city || 'N/A'}</p>
+				</div>
+				<div class="sales-info">
+					<p><strong>Sales:</strong> ${frappe.session.user}</p>
+					<p><strong>Mob:</strong> N/A</p>
+					<p><strong>Email:</strong> ${frappe.session.user}</p>
+				</div>
+			</div>
+
+			<!-- Statement Table -->
+			<table class="statement-table">
+				<thead>
+					<tr>
+						${columns.map(col => `<th>${col.label}</th>`).join('')}
+					</tr>
+				</thead>
+				<tbody>
+					${data.map(row => {
+			let isOpeningBalance = row.our_ref && row.our_ref.includes('Opening Balance');
+			let balanceClass = row.balance > 0 ? 'balance-positive' : (row.balance < 0 ? 'balance-negative' : '');
+
+			return `<tr ${isOpeningBalance ? 'class="opening-balance"' : ''}>
+							<td class="center">${row.date ? frappe.datetime.str_to_user(row.date) : ''}</td>
+							<td>${row.our_ref || ''}</td>
+							<td>${row.your_ref || ''}</td>
+							<td class="number">${row.debit > 0 ? format_currency(row.debit, null, 2) : ''}</td>
+							<td class="number">${row.credit > 0 ? format_currency(row.credit, null, 2) : ''}</td>
+							<td class="number ${balanceClass}">${format_currency(row.balance || 0, null, 2)}</td>
+						</tr>`;
+		}).join('')}
+				</tbody>
+			</table>
+
+			<!-- Summary Section -->
+			<div class="summary-section">
+				<table class="summary-table">
+					<tr>
+						<td class="label">Total:</td>
+						<td class="amount">${format_currency(total_debit, null, 2)}</td>
+						<td class="amount">${format_currency(total_credit, null, 2)}</td>
+						<td class="amount">${format_currency(outstanding_balance, null, 2)}</td>
+					</tr>
+					<tr>
+						<td class="label">Outstanding:</td>
+						<td class="amount" colspan="2">${format_currency(outstanding_balance, null, 2)}</td>
+						<td class="amount"></td>
+					</tr>
+					<tr>
+						<td class="label">Total Invoices:</td>
+						<td class="amount" colspan="2">${data.length}</td>
+						<td class="amount"></td>
+					</tr>
+				</table>
+			</div>
+		</div>`;
+
+		return html;
+	},
+
 	"onload": function (report) {
 		// Add custom buttons
 		report.page.add_inner_button(__("Print Statement"), function () {
@@ -102,18 +239,8 @@ frappe.query_reports["Customer Statement of Accounts"] = {
 				return;
 			}
 
-			// Open print format
-			let url = `/printview?doctype=Customer&name=${filters.customer}&format=Customer Statement&trigger_print=1`;
-
-			// Add filter parameters to URL for print format
-			let params = new URLSearchParams({
-				from_date: filters.from_date,
-				to_date: filters.to_date,
-				company: filters.company
-			});
-
-			url += '&' + params.toString();
-			window.open(url, '_blank');
+			// Custom print function that doesn't rely on ERPNext's print system
+			frappe.query_reports["Customer Statement of Accounts"].custom_print(report, filters);
 		});
 
 		report.page.add_inner_button(__("Send Email"), function () {
@@ -124,7 +251,7 @@ frappe.query_reports["Customer Statement of Accounts"] = {
 			}
 
 			frappe.call({
-				method: "your_app.your_module.report.customer_statement_of_accounts.customer_statement_of_accounts.send_statement_email",
+				method: "officegate.officegate.report.customer_statement_of_accounts.customer_statement_of_accounts.send_statement_email",
 				args: {
 					customer: filters.customer,
 					from_date: filters.from_date,
@@ -138,11 +265,6 @@ frappe.query_reports["Customer Statement of Accounts"] = {
 				}
 			});
 		});
-
-		report.page.add_inner_button(__("Export to Excel"), function () {
-			let filters = report.get_values();
-			report.export_report();
-		});
 	},
 
 	"get_datatable_options": function (options) {
@@ -151,62 +273,11 @@ frappe.query_reports["Customer Statement of Accounts"] = {
 			inlineFilters: true,
 			treeView: false
 		});
-	}
-};
+	},
 
-// Custom functions for additional features
-frappe.query_reports["Customer Statement of Accounts"].send_statement_email = function (filters) {
-	let d = new frappe.ui.Dialog({
-		title: __("Send Customer Statement"),
-		fields: [
-			{
-				fieldname: "to_email",
-				label: __("To Email"),
-				fieldtype: "Data",
-				reqd: 1
-			},
-			{
-				fieldname: "cc_email",
-				label: __("CC Email"),
-				fieldtype: "Data"
-			},
-			{
-				fieldname: "subject",
-				label: __("Subject"),
-				fieldtype: "Data",
-				default: __("Customer Statement of Accounts"),
-				reqd: 1
-			},
-			{
-				fieldname: "message",
-				label: __("Message"),
-				fieldtype: "Text Editor",
-				default: __("Please find attached your statement of accounts.")
-			}
-		],
-		primary_action: function () {
-			let values = d.get_values();
-			frappe.call({
-				method: "your_app.your_module.report.customer_statement_of_accounts.customer_statement_of_accounts.send_email",
-				args: {
-					customer: filters.customer,
-					from_date: filters.from_date,
-					to_date: filters.to_date,
-					company: filters.company,
-					to_email: values.to_email,
-					cc_email: values.cc_email,
-					subject: values.subject,
-					message: values.message
-				},
-				callback: function (r) {
-					if (!r.exc) {
-						d.hide();
-						frappe.show_alert(__("Email sent successfully"));
-					}
-				}
-			});
-		},
-		primary_action_label: __("Send Email")
-	});
-	d.show();
+	// Print settings
+	"print_settings": {
+		"orientation": "Portrait",
+		"page_size": "A4"
+	}
 };
