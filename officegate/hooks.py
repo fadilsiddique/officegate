@@ -148,7 +148,23 @@ app_include_js = ["/assets/officegate/js/quotations.js","/assets/officegate/js/c
 doc_events = {
     "Delivery Note": {
         "validate": "officegate.api.validate_no_duplicate_against_invoice",
-    }
+        "autoname": "officegate.doc_naming.delivery_note_autoname"
+    },
+    "Sales Invoice": {
+        "autoname": "officegate.doc_naming.sales_invoice_autoname"
+    },
+    "Quotation": {
+        "autoname": "officegate.doc_naming.quotation_autoname"
+    },
+    "Purchase Order": {
+        "autoname": "officegate.doc_naming.purchase_order_autoname"
+    },
+    "Purchase Invoice": {
+        "autoname": "officegate.doc_naming.purchase_invoice_autoname",
+    },
+    "Sales Order": {
+        "autoname": "officegate.doc_naming.sales_order_autoname",
+    },
 }
 
 
