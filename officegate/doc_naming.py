@@ -41,12 +41,12 @@ def quotation_autoname(doc, method=None):
         else:
             naming_series = f"GEN-{year_suffix}-"
         
-        doc.name = make_autoname(naming_series + ".####")
+        doc.name = make_autoname(naming_series + ".#####")
         
     except Exception as e:
         frappe.log_error(f"Error in quotation_autoname: {str(e)}")
         # Fallback to default naming
-        doc.name = make_autoname("QTN-.YYYY.-.####")
+        doc.name = make_autoname("QTN-.YYYY.-.#####")
 
 def purchase_order_autoname(doc, method=None):
     """
@@ -64,12 +64,12 @@ def purchase_order_autoname(doc, method=None):
         else:
             naming_series = f"GEN-LPO-{year_suffix}-"
         
-        doc.name = make_autoname(naming_series + ".####")
+        doc.name = make_autoname(naming_series + ".#####")
         
     except Exception as e:
         frappe.log_error(f"Error in purchase_order_autoname: {str(e)}")
         # Fallback to default naming
-        doc.name = make_autoname("PO-.YYYY.-.####")
+        doc.name = make_autoname("PO-.YYYY.-.#####")
 
 def purchase_invoice_autoname(doc, method=None):
     """
@@ -87,12 +87,12 @@ def purchase_invoice_autoname(doc, method=None):
         else:
             naming_series = f"GEN-LPO-{year_suffix}-"
         
-        doc.name = make_autoname(naming_series + ".####")
+        doc.name = make_autoname(naming_series + ".#####")
         
     except Exception as e:
         frappe.log_error(f"Error in purchase_order_autoname: {str(e)}")
         # Fallback to default naming
-        doc.name = make_autoname("PO-.YYYY.-.####")
+        doc.name = make_autoname("PO-.YYYY.-.#####")
 
 def sales_invoice_autoname(doc, method=None):
     """
@@ -110,12 +110,12 @@ def sales_invoice_autoname(doc, method=None):
         else:
             naming_series = f"INV-GEN-{year_suffix}-"
         
-        doc.name = make_autoname(naming_series + ".####")
+        doc.name = make_autoname(naming_series + ".#####")
         
     except Exception as e:
         frappe.log_error(f"Error in sales_invoice_autoname: {str(e)}")
         # Fallback to default naming
-        doc.name = make_autoname("INV-.YYYY.-.####")
+        doc.name = make_autoname("INV-.YYYY.-.#####")
 
 def sales_order_autoname(doc, method=None):
     """
@@ -133,12 +133,12 @@ def sales_order_autoname(doc, method=None):
         else:
             naming_series = f"INV-GEN-{year_suffix}-"
         
-        doc.name = make_autoname(naming_series + ".####")
+        doc.name = make_autoname(naming_series + ".#####")
         
     except Exception as e:
         frappe.log_error(f"Error in sales_invoice_autoname: {str(e)}")
         # Fallback to default naming
-        doc.name = make_autoname("INV-.YYYY.-.####")
+        doc.name = make_autoname("INV-.YYYY.-.#####")
 
 def delivery_note_autoname(doc, method=None):
     """
@@ -156,12 +156,12 @@ def delivery_note_autoname(doc, method=None):
         else:
             naming_series = f"DN-GEN-{year_suffix}-"
         
-        doc.name = make_autoname(naming_series + ".####")
+        doc.name = make_autoname(naming_series + ".#####")
         
     except Exception as e:
         frappe.log_error(f"Error in delivery_note_autoname: {str(e)}")
         # Fallback to default naming
-        doc.name = make_autoname("DN-.YYYY.-.####")
+        doc.name = make_autoname("DN-.YYYY.-.#####")
 
 def purchase_invoice_autoname(doc, method=None):
     """
@@ -179,12 +179,12 @@ def purchase_invoice_autoname(doc, method=None):
         else:
             naming_series = f"PINV-GEN-{year_suffix}-"
         
-        doc.name = make_autoname(naming_series + ".####")
+        doc.name = make_autoname(naming_series + ".#####")
         
     except Exception as e:
         frappe.log_error(f"Error in purchase_invoice_autoname: {str(e)}")
         # Fallback to default naming
-        doc.name = make_autoname("PINV-.YYYY.-.####")
+        doc.name = make_autoname("PINV-.YYYY.-.#####")
 
 def sales_order_autoname(doc, method=None):
     """
@@ -202,12 +202,12 @@ def sales_order_autoname(doc, method=None):
         else:
             naming_series = f"SO-GEN-{year_suffix}-"
         
-        doc.name = make_autoname(naming_series + ".####")
+        doc.name = make_autoname(naming_series + ".#####")
         
     except Exception as e:
         frappe.log_error(f"Error in sales_order_autoname: {str(e)}")
         # Fallback to default naming
-        doc.name = make_autoname("SO-.YYYY.-.####")
+        doc.name = make_autoname("SO-.YYYY.-.#####")
 
 # Alternative: Single function to handle all document types
 def universal_autoname(doc, method=None):
