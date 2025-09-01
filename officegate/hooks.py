@@ -45,6 +45,7 @@ app_include_js = ["/assets/officegate/js/quotations.js","/assets/officegate/js/c
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+# doctype_list_js = {"Item" : "public/js/item_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -200,6 +201,10 @@ doc_events = {
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "officegate.event.get_events"
 # }
+
+override_whitelisted_methods = {
+    "frappe.utils.print_format.download_pdf": "officegate.pdf_override.download_pdf"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
