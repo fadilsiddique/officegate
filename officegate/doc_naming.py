@@ -237,29 +237,3 @@ def universal_autoname(doc, method=None):
     except Exception as e:
         frappe.log_error(f"Error in universal_autoname: {str(e)}")
 
-# Usage Examples for hooks.py:
-"""
-# In your custom app's hooks.py file, add:
-
-doc_events = {
-    "Quotation": {
-        "autoname": "your_app.custom_naming.quotation_autoname"
-    },
-    "Purchase Order": {
-        "autoname": "your_app.custom_naming.purchase_order_autoname"
-    },
-    "Sales Invoice": {
-        "autoname": "your_app.custom_naming.sales_invoice_autoname"
-    },
-    "Delivery Note": {
-        "autoname": "your_app.custom_naming.delivery_note_autoname"
-    }
-}
-
-# OR use the universal function for all:
-doc_events = {
-    "*": {
-        "autoname": "your_app.custom_naming.universal_autoname"
-    }
-}
-"""
