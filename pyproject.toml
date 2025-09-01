@@ -72,3 +72,8 @@ typing-modules = ["frappe.types.DF"]
 quote-style = "double"
 indent-style = "tab"
 docstring-code-format = true
+
+[tool.bench.scripts]
+post-install = """
+python3 -m playwright install
+"""
