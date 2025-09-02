@@ -1,73 +1,35 @@
-import os
-import platform
-import subprocess
-import tempfile
-from pathlib import Path
-
 import frappe
-from frappe.utils import get_url
+from pathlib import Path
+from playwright.sync_api import sync_playwright
 
 
 class ChromiumPDFGenerator:
     """
-    Minimal headless Chromium PDF generator.
-    Works with Frappe Cloud bundled Chromium (if present).
+    Frappe Cloud compatible PDF generator using Playwright.
+    Uses the pre-installed Chromium with channel="chromium".
     """
 
-    EXECUTABLE_PATHS = {
-        "linux": ["chromium", "headless_shell"],
-        "darwin": ["chrome-mac", "headless_shell"],
-        "windows": ["chrome-win", "headless_shell.exe"],
-    }
-
     def __init__(self):
-        self.chromium_path = self._find_chromium()
+        pass  # No manual Chromium setup needed
 
-    def _find_chromium(self):
-        bench_path = frappe.utils.get_bench_path()
-        chromium_dir = os.path.join(bench_path, "chromium")
-        platform_name = platform.system().lower()
+    def generate_pdf_from_url(self, url: str, output_path: str = None) -> bytes:
+        """
+        Generate PDF from a URL.
 
-        if platform_name not in self.EXECUTABLE_PATHS:
-            frappe.throw(f"Unsupported platform: {platform_name}")
-
-        exec_path = Path(chromium_dir).joinpath(*self.EXECUTABLE_PATHS[platform_name])
-        if not exec_path.exists():
-            frappe.throw(
-                f"Chromium executable not found at {exec_path}. Cannot generate PDF."
-            )
-        return str(exec_path)
-
-    def generate_pdf(self, html: str) -> bytes:
-        # ensure absolute URLs
-        html = html.replace('src="/', f'src="{get_url()}/')
-        html = html.replace('href="/', f'href="{get_url()}/')
-
-        # temporary HTML file
-        with tempfile.NamedTemporaryFile("w+", suffix=".html", delete=False) as html_file:
-            html_file.write(html)
-            html_path = html_file.name
-
-        # output PDF path
-        pdf_path = f"/tmp/{frappe.generate_hash()}.pdf"
-
-        # Chromium command
-        command = [
-            self.chromium_path,
-            "--headless",
-            "--disable-gpu",
-            "--no-sandbox",
-            f"--print-to-pdf={pdf_path}",
-            html_path,
-        ]
-        subprocess.run(command, check=True)
-
-        # read PDF
-        with open(pdf_path, "rb") as f:
-            pdf_data = f.read()
-
-        # cleanup
-        os.remove(html_path)
-        os.remove(pdf_path)
-
-        return pdf_data
+        :param url: Full URL to the page to print
+        :param output_path: Optional path to save the PDF
+        :return: PDF bytes if output_path is None
+        """
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, channel="chromium")
+            page = browser.new_page()
+            page.goto(url, wait_until="networkidle")
+            
+            if output_path:
+                page.pdf(path=output_path)
+                result = None
+            else:
+                result = page.pdf()
+            
+            browser.close()
+            return result
