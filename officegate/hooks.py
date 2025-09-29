@@ -202,8 +202,16 @@ doc_events = {
 # 	"frappe.desk.doctype.event.event.get_events": "officegate.event.get_events"
 # }
 
+# override_whitelisted_methods = {
+#     "frappe.utils.print_format.download_pdf": "officegate.pdf_override.download_pdf"
+# }
+
+permission_query_conditions = {
+    "Print Format": "officegate.print_format.get_permission_query_conditions"
+}
+
 override_whitelisted_methods = {
-    "frappe.utils.print_format.download_pdf": "officegate.pdf_override.download_pdf"
+    "frappe.desk.print_report.get_print_formats": "officegate.print_format.get_print_formats"
 }
 #
 # each overriding function accepts a `data` argument;

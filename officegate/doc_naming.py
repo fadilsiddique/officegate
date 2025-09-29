@@ -10,8 +10,8 @@ def get_company_prefix(company):
     """Get company-specific prefix"""
     if company == "Capital One Office Furniture":
         return "COF"
-    elif company == "Company Y":
-        return "OG"
+    elif company == "Office Gate Furniture Trading LLC":
+        return "OGF"
     else:
         return "GEN"  # Generic prefix for other companies
 
@@ -29,15 +29,15 @@ def quotation_autoname(doc, method=None):
     """
     Custom naming for Quotation
     Capital One Office Furniture: COF-YYY-0001
-    Company Y: OG-YYY-0001
+    Office Gate Furniture Trading LLC: OGF-YYY-0001
     """
     try:
         year_suffix = get_year_suffix("YYY")
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"COF-{year_suffix}-"
-        elif doc.company == "Company Y":
-            naming_series = f"OG-{year_suffix}-"
+        elif doc.company == "Office Gate Furniture Trading LLC":
+            naming_series = f"OGF-{year_suffix}-"
         else:
             naming_series = f"GEN-{year_suffix}-"
         
@@ -52,15 +52,15 @@ def purchase_order_autoname(doc, method=None):
     """
     Custom naming for Purchase Order
     Capital One Office Furniture: LPO-YYY-0001
-    Company Y: OG-LPO-YYY-0001
+    Office Gate Furniture Trading LLC: OGF-LPO-YYY-0001
     """
     try:
         year_suffix = get_year_suffix("YYY")
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"LPO-{year_suffix}-"
-        elif doc.company == "Company Y":
-            naming_series = f"OG-LPO-{year_suffix}-"
+        elif doc.company == "Office Gate Furniture Trading LLC":
+            naming_series = f"OGF-LPO-{year_suffix}-"
         else:
             naming_series = f"GEN-LPO-{year_suffix}-"
         
@@ -75,14 +75,14 @@ def purchase_invoice_autoname(doc, method=None):
     """
     Custom naming for Purchase Order
     Capital One Office Furniture: LPO-YYY-0001
-    Company Y: OG-LPO-YYY-0001
+    Office Gate Furniture Trading LLC: OGF-LPO-YYY-0001
     """
     try:
         year_suffix = get_year_suffix("YYY")
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"PI-{year_suffix}-"
-        elif doc.company == "Company Y":
+        elif doc.company == "Office Gate Furniture Trading LLC":
             naming_series = f"OG-LPO-{year_suffix}-"
         else:
             naming_series = f"GEN-LPO-{year_suffix}-"
@@ -98,15 +98,15 @@ def sales_invoice_autoname(doc, method=None):
     """
     Custom naming for Sales Invoice
     Capital One Office Furniture: INV-COF-YY-0001
-    Company Y: INV-OG-YY-0001
+    Office Gate Furniture Trading LLC: INV-OGF-YY-0001
     """
     try:
         year_suffix = get_year_suffix("YY")
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"INV-COF-{year_suffix}-"
-        elif doc.company == "Company Y":
-            naming_series = f"INV-OG-{year_suffix}-"
+        elif doc.company == "Office Gate Furniture Trading LLC":
+            naming_series = f"INV-OGF-{year_suffix}-"
         else:
             naming_series = f"INV-GEN-{year_suffix}-"
         
@@ -121,15 +121,15 @@ def sales_order_autoname(doc, method=None):
     """
     Custom naming for Sales Invoice
     Capital One Office Furniture: INV-COF-YY-0001
-    Company Y: INV-OG-YY-0001
+    Office Gate Furniture Trading LLC: INV-OGF-YY-0001
     """
     try:
         year_suffix = get_year_suffix("YY")
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"SO-COF-{year_suffix}-"
-        elif doc.company == "Company Y":
-            naming_series = f"INV-OG-{year_suffix}-"
+        elif doc.company == "Office Gate Furniture Trading LLC":
+            naming_series = f"INV-OGF-{year_suffix}-"
         else:
             naming_series = f"INV-GEN-{year_suffix}-"
         
@@ -144,15 +144,15 @@ def delivery_note_autoname(doc, method=None):
     """
     Custom naming for Delivery Note
     Capital One Office Furniture: DN-COF-25-0001
-    Company Y: DN-OG-25-0001
+    Office Gate Furniture Trading LLC: DN-OGF-25-0001
     """
     try:
         year_suffix = get_year_suffix("YY")
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"DN-COF-{year_suffix}-"
-        elif doc.company == "Company Y":
-            naming_series = f"DN-OG-{year_suffix}-"
+        elif doc.company == "Office Gate Furniture Trading LLC":
+            naming_series = f"DN-OGF-{year_suffix}-"
         else:
             naming_series = f"DN-GEN-{year_suffix}-"
         
@@ -167,15 +167,15 @@ def purchase_invoice_autoname(doc, method=None):
     """
     Custom naming for Purchase Invoice (if needed)
     Capital One Office Furniture: PINV-COF-YY-0001
-    Company Y: PINV-OG-YY-0001
+    Office Gate Furniture Trading LLC: PINV-OGF-YY-0001
     """
     try:
         year_suffix = get_year_suffix("YY")
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"PINV-COF-{year_suffix}-"
-        elif doc.company == "Company Y":
-            naming_series = f"PINV-OG-{year_suffix}-"
+        elif doc.company == "Office Gate Furniture Trading LLC":
+            naming_series = f"PINV-OGF-{year_suffix}-"
         else:
             naming_series = f"PINV-GEN-{year_suffix}-"
         
@@ -190,15 +190,15 @@ def sales_order_autoname(doc, method=None):
     """
     Custom naming for Sales Order (if needed)
     Capital One Office Furniture: SO-COF-YYY-0001
-    Company Y: SO-OG-YYY-0001
+    Office Gate Furniture Trading LLC: SO-OGF-YYY-0001
     """
     try:
         year_suffix = get_year_suffix("YYY")
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"SO-COF-{year_suffix}-"
-        elif doc.company == "Company Y":
-            naming_series = f"SO-OG-{year_suffix}-"
+        elif doc.company == "Office Gate Furniture Trading LLC":
+            naming_series = f"SO-OGF-{year_suffix}-"
         else:
             naming_series = f"SO-GEN-{year_suffix}-"
         

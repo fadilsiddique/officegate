@@ -1,165 +1,119 @@
-// reserved_stock_report.js
-
-function unreserve_stock(reservation_entry) {
-	frappe.confirm(
-		__('Are you sure you want to unreserve this stock? This will cancel the Stock Reservation Entry.'),
-		function () {
-			frappe.call({
-				method: 'officegate.officegate.report.reserved_stock_report.reserved_stock_report.unreserve_stock',
-				args: {
-					stock_reservation_entry: reservation_entry
-				},
-				callback: function (r) {
-					if (r.message && r.message.status === 'success') {
-						frappe.msgprint({
-							message: r.message.message,
-							indicator: 'green'
-						});
-						// Refresh the report
-						frappe.query_report.refresh();
-					} else {
-						frappe.msgprint({
-							message: r.message ? r.message.message : 'Error occurred while unreserving stock',
-							indicator: 'red'
-						});
-					}
-				},
-				error: function (r) {
-					frappe.msgprint({
-						message: 'Error occurred while unreserving stock',
-						indicator: 'red'
-					});
-				}
-			});
-		}
-	);
-}
+// Copyright (c) 2025, Your Company and contributors
+// For license information, please see license.txt
 
 frappe.query_reports["Reserved Stock Report"] = {
 	"filters": [
 		{
-			"fieldname": "item_group",
-			"label": __("Item Group"),
-			"fieldtype": "Link",
-			"options": "Item Group",
-			"width": "80"
-		},
-		{
 			"fieldname": "item_code",
-			"label": __("Item Code"),
+			"label": __("Item"),
 			"fieldtype": "Link",
-			"options": "Item",
-			"width": "80",
-			"get_query": function () {
-				return {
-					filters: {
-						"disabled": 0
-					}
-				};
-			}
-		},
-		{
-			"fieldname": "item_name",
-			"label": __("Item Name"),
-			"fieldtype": "Data",
-			"width": "80"
+			"options": "Item"
 		},
 		{
 			"fieldname": "customer",
 			"label": __("Customer"),
 			"fieldtype": "Link",
-			"options": "Customer",
-			"width": "80"
+			"options": "Customer"
 		},
 		{
 			"fieldname": "sales_order",
 			"label": __("Sales Order"),
 			"fieldtype": "Link",
-			"options": "Sales Order",
-			"width": "80",
-			"get_query": function () {
-				return {
-					filters: {
-						"docstatus": 1,
-						"status": ["!=", "Closed"]
-					}
-				};
-			}
+			"options": "Sales Order"
 		},
 		{
-			"fieldname": "warehouse",
-			"label": __("Warehouse"),
+			"fieldname": "purchase_order",
+			"label": __("Purchase Order"),
 			"fieldtype": "Link",
-			"options": "Warehouse",
-			"width": "80",
-			"get_query": function () {
-				return {
-					filters: {
-						"disabled": 0
-					}
-				};
-			}
+			"options": "Purchase Order"
 		}
 	],
 
-	onload: function (report) {
-		// Add refresh button
-		report.page.add_inner_button(__('Refresh'), function () {
-			report.refresh();
-		});
-
-		// Add debug button for troubleshooting
-		report.page.add_inner_button(__('Debug Reservations'), function () {
-			frappe.call({
-				method: 'your_app.your_module.report.reserved_stock_report.reserved_stock_report.debug_reservations',
-				callback: function (r) {
-					if (r.message) {
-						console.log('Reservation Data:', r.message);
-						frappe.msgprint({
-							title: 'Debug Info',
-							message: `Found ${r.message.length} reservation entries. Check console for details.`,
-							indicator: 'blue'
-						});
-					} else {
-						frappe.msgprint('No reservation entries found');
-					}
-				}
-			});
-		});
-
-		// Set auto-refresh every 30 seconds for real-time updates
-		setInterval(function () {
-			if (report.page.is_visible()) {
-				report.refresh();
-			}
-		}, 30000);
-	},
-
-	formatter: function (value, row, column, data, default_formatter) {
+	"formatter": function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data);
 
-		if (column.fieldname == "actions" && data && data.actions) {
-			return data.actions;
+		// Format actual_qty in green and bold
+		if (column.fieldname == "actual_qty" && data.actual_qty) {
+			value = `<span style="color: green; font-weight: bold;">${data.actual_qty}</span>`;
 		}
 
-		// Highlight negative quantities in red
-		if (column.fieldname == "qty_after_reservation" && data && data.qty_after_reservation < 0) {
-			value = `<span style="color: red; font-weight: bold;">${value}</span>`;
+		// Format ordered_qty in orange and bold
+		if (column.fieldname == "ordered_qty" && data.ordered_qty) {
+			value = `<span style="color: orange; font-weight: bold;">${data.ordered_qty}</span>`;
 		}
 
-		// Highlight reserved quantities in orange
-		if (column.fieldname == "reserved_qty" && data && data.reserved_qty > 0 && data.indent == 0) {
-			value = `<span style="color: orange; font-weight: bold;">${value}</span>`;
+		// Format reserved_qty in red and bold
+		if (column.fieldname == "reserved_qty" && data.reserved_qty) {
+			value = `<span style="color: red; font-weight: bold;">${data.reserved_qty}</span>`;
+		}
+
+		// Format reserved_qty_detail in red and bold
+		if (column.fieldname == "reserved_qty_detail" && data.reserved_qty_detail) {
+			value = `<span style="color: red; font-weight: bold;">${data.reserved_qty_detail}</span>`;
+		}
+
+		// Add unreserve button
+		if (column.fieldname == "unreserve" && value == "Unreserve" && data._voucher_type == "Sales Order") {
+			value = `<button class="btn btn-xs btn-danger unreserve-btn" 
+                        data-item="${data._item_code}" 
+                        data-voucher-type="${data._voucher_type}" 
+                        data-voucher-no="${data._voucher_no}">
+                        ${__("Unreserve")}
+                    </button>`;
 		}
 
 		return value;
 	},
 
-	get_datatable_options(options) {
-		return Object.assign(options, {
-			checkboxColumn: false,
-			inlineFilters: true,
-			treeView: true
+	"onload": function (report) {
+		// Handle unreserve button clicks
+		report.$report.on('click', '.unreserve-btn', function () {
+			let $btn = $(this);
+			let item_code = $btn.data('item');
+			let voucher_type = $btn.data('voucher-type');
+			let voucher_no = $btn.data('voucher-no');
+
+			frappe.confirm(
+				__('Are you sure you want to unreserve stock for {0} from {1}?', [item_code, voucher_no]),
+				function () {
+					// Disable button
+					$btn.prop('disabled', true).text(__('Unreserving...'));
+
+					frappe.call({
+						method: "your_app.your_module.report.item_stock_status_report.item_stock_status_report.unreserve_stock",
+						args: {
+							item_code: item_code,
+							voucher_type: voucher_type,
+							voucher_no: voucher_no
+						},
+						callback: function (r) {
+							if (r.message.status === "success") {
+								frappe.show_alert({
+									message: r.message.message,
+									indicator: 'green'
+								});
+								// Refresh the report
+								report.refresh();
+							} else {
+								frappe.show_alert({
+									message: r.message.message,
+									indicator: 'red'
+								});
+								// Re-enable button
+								$btn.prop('disabled', false).text(__('Unreserve'));
+							}
+						},
+						error: function () {
+							frappe.show_alert({
+								message: __('An error occurred while unreserving stock'),
+								indicator: 'red'
+							});
+							// Re-enable button
+							$btn.prop('disabled', false).text(__('Unreserve'));
+						}
+					});
+				}
+			);
 		});
 	}
 };
