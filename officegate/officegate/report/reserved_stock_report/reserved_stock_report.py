@@ -1,6 +1,3 @@
-# Copyright (c) 2025, Your Company and contributors
-# For license information, please see license.txt
-
 import frappe
 from frappe import _
 
@@ -10,6 +7,7 @@ def execute(filters=None):
     return columns, data
 
 def get_columns():
+    """Define columns for the report"""
     return [
         {
             "fieldname": "item_code",
@@ -37,200 +35,193 @@ def get_columns():
             "width": 120
         },
         {
-            "fieldname": "voucher_type",
-            "label": _("Voucher Type"),
+            "fieldname": "document_type",
+            "label": _("Document Type"),
             "fieldtype": "Data",
             "width": 150
         },
         {
-            "fieldname": "voucher_no",
-            "label": _("Voucher No"),
+            "fieldname": "document_name",
+            "label": _("Document"),
             "fieldtype": "Dynamic Link",
-            "options": "voucher_type",
+            "options": "document_type",
             "width": 150
         },
         {
-            "fieldname": "customer",
-            "label": _("Customer"),
-            "fieldtype": "Link",
-            "options": "Customer",
-            "width": 200
-        },
-        {
-            "fieldname": "reserved_qty_detail",
-            "label": _("Reserved Qty"),
-            "fieldtype": "Float",
+            "fieldname": "party_type",
+            "label": _("Party Type"),
+            "fieldtype": "Data",
             "width": 120
         },
         {
+            "fieldname": "party",
+            "label": _("Party"),
+            "fieldtype": "Dynamic Link",
+            "options": "party_type",
+            "width": 150
+        },
+        {
+            "fieldname": "reservation_qty",
+            "label": _("Reservation Qty"),
+            "fieldtype": "Float",
+            "width": 130
+        },
+        {
+            "fieldname": "stock_reservation_entry",
+            "label": _("Stock Reservation Entry"),
+            "fieldtype": "Link",
+            "options": "Stock Reservation Entry",
+            "width": 180
+        },
+        {
             "fieldname": "unreserve",
-            "label": _("Action"),
+            "label": _(""),
             "fieldtype": "Button",
             "width": 100
         }
     ]
 
 def get_data(filters):
+    """Fetch and structure data for the report"""
     conditions = get_conditions(filters)
     
-    # Get item-wise stock summary
-    stock_data = frappe.db.sql(f"""
-        SELECT 
-            bin.item_code,
-            SUM(bin.actual_qty) as actual_qty,
-            SUM(bin.ordered_qty) as ordered_qty,
-            SUM(bin.reserved_qty) as reserved_qty
-        FROM `tabBin` bin
-        WHERE 1=1 {conditions['bin_conditions']}
-        GROUP BY bin.item_code
-        HAVING SUM(bin.reserved_qty) > 0 OR SUM(bin.ordered_qty) > 0
-        ORDER BY bin.item_code
-    """, filters, as_dict=1)
+    # Get all items with stock (even without reservations)
+    all_items = get_all_items_stock(conditions, filters)
     
+    # Get reservation details
+    reservations = get_reservation_details(conditions, filters)
+    
+    # Structure data in parent-child format
     data = []
     
-    for item in stock_data:
-        # Add parent row with item summary
+    for item in all_items:
+        # Parent row - Item summary
         parent_row = {
-            "item_code": f"<b>{item.item_code}</b>",
+            "item_code": item.item_code,
             "actual_qty": item.actual_qty,
             "ordered_qty": item.ordered_qty,
             "reserved_qty": item.reserved_qty,
-            "voucher_type": "",
-            "voucher_no": "",
-            "customer": "",
-            "reserved_qty_detail": "",
-            "unreserve": "",
-            "indent": 0
+            "indent": 0,
+            "bold": 1
         }
         data.append(parent_row)
         
-        # Get reservation details for Sales Orders
-        so_details = get_sales_order_details(item.item_code, filters)
-        for detail in so_details:
-            child_row = {
-                "item_code": "",
-                "actual_qty": "",
-                "ordered_qty": "",
-                "reserved_qty": "",
-                "voucher_type": "Sales Order",
-                "voucher_no": f"<b>{detail.voucher_no}</b>",
-                "customer": detail.customer,
-                "reserved_qty_detail": detail.reserved_qty,
-                "unreserve": "Unreserve",
-                "indent": 1,
-                "_item_code": item.item_code,
-                "_voucher_no": detail.voucher_no,
-                "_voucher_type": "Sales Order"
-            }
-            data.append(child_row)
+        # Child rows - Reservation details
+        item_reservations = [r for r in reservations if r.item_code == item.item_code]
         
-        # Get ordered details for Purchase Orders
-        po_details = get_purchase_order_details(item.item_code, filters)
-        for detail in po_details:
+        for res in item_reservations:
             child_row = {
                 "item_code": "",
-                "actual_qty": "",
-                "ordered_qty": "",
-                "reserved_qty": "",
-                "voucher_type": "Purchase Order",
-                "voucher_no": f"<b>{detail.voucher_no}</b>",
-                "customer": detail.supplier or "",
-                "reserved_qty_detail": detail.ordered_qty,
-                "unreserve": "",
-                "indent": 1,
-                "_item_code": item.item_code,
-                "_voucher_no": detail.voucher_no,
-                "_voucher_type": "Purchase Order"
+                "document_type": res.voucher_type,
+                "document_name": res.voucher_no,
+                "party_type": "Customer" if res.voucher_type == "Sales Order" else "Supplier" if res.voucher_type == "Purchase Order" else "",
+                "party": res.party,
+                "reservation_qty": res.reserved_qty,
+                "stock_reservation_entry": res.name if res.voucher_type == "Sales Order" else "",
+                "unreserve": "Unreserve" if res.voucher_type == "Sales Order" else "",
+                "indent": 1
             }
             data.append(child_row)
     
     return data
 
 def get_conditions(filters):
-    bin_conditions = ""
-    so_conditions = ""
-    po_conditions = ""
+    """Build query conditions based on filters"""
+    conditions = []
     
     if filters.get("item_code"):
-        bin_conditions += " AND bin.item_code = %(item_code)s"
-        so_conditions += " AND soi.item_code = %(item_code)s"
-        po_conditions += " AND poi.item_code = %(item_code)s"
+        conditions.append("sre.item_code = %(item_code)s")
     
     if filters.get("customer"):
-        so_conditions += " AND so.customer = %(customer)s"
+        conditions.append("""
+            EXISTS (
+                SELECT 1 FROM `tabSales Order` so 
+                WHERE so.name = sre.voucher_no 
+                AND so.customer = %(customer)s
+            )
+        """)
     
     if filters.get("sales_order"):
-        so_conditions += " AND so.name = %(sales_order)s"
+        conditions.append("sre.voucher_no = %(sales_order)s")
+        conditions.append("sre.voucher_type = 'Sales Order'")
     
     if filters.get("purchase_order"):
-        po_conditions += " AND po.name = %(purchase_order)s"
+        conditions.append("sre.voucher_no = %(purchase_order)s")
+        conditions.append("sre.voucher_type = 'Purchase Order'")
     
-    return {
-        "bin_conditions": bin_conditions,
-        "so_conditions": so_conditions,
-        "po_conditions": po_conditions
-    }
+    return " AND " + " AND ".join(conditions) if conditions else ""
 
-def get_sales_order_details(item_code, filters):
-    conditions = get_conditions(filters)
+def get_all_items_stock(conditions, filters):
+    """Get all items with stock data, including those without reservations"""
+    # Build item filter if specified
+    item_filter = ""
+    if filters and filters.get("item_code"):
+        item_filter = "AND bin.item_code = %(item_code)s"
     
-    return frappe.db.sql(f"""
+    query = f"""
         SELECT 
-            so.name as voucher_no,
-            so.customer,
-            soi.item_code,
-            (soi.stock_qty - soi.delivered_qty) as reserved_qty
-        FROM `tabSales Order` so
-        INNER JOIN `tabSales Order Item` soi ON so.name = soi.parent
-        WHERE so.docstatus = 1
-            AND so.status NOT IN ('Closed', 'Completed')
-            AND soi.item_code = %(item_code)s
-            AND (soi.stock_qty - soi.delivered_qty) > 0
-            {conditions['so_conditions']}
-        ORDER BY so.transaction_date DESC
-    """, {"item_code": item_code, **filters}, as_dict=1)
-
-def get_purchase_order_details(item_code, filters):
-    conditions = get_conditions(filters)
+            bin.item_code,
+            COALESCE(SUM(bin.actual_qty), 0) as actual_qty,
+            COALESCE(SUM(bin.ordered_qty), 0) as ordered_qty,
+            COALESCE(
+                (SELECT SUM(sre.reserved_qty) 
+                 FROM `tabStock Reservation Entry` sre 
+                 WHERE sre.item_code = bin.item_code 
+                 AND sre.docstatus = 1 
+                 AND sre.status != 'Cancelled'), 0
+            ) as reserved_qty
+        FROM `tabBin` bin
+        WHERE bin.actual_qty > 0 OR bin.ordered_qty > 0
+        {item_filter}
+        GROUP BY bin.item_code
+        ORDER BY bin.item_code
+    """
     
-    return frappe.db.sql(f"""
+    items = frappe.db.sql(query, filters or {}, as_dict=1)
+    
+    # If filters are applied for sales order, purchase order, or customer
+    # we need to filter items that have matching reservations
+    if filters and (filters.get("sales_order") or filters.get("purchase_order") or filters.get("customer")):
+        reservation_items = get_filtered_reservation_items(conditions, filters)
+        reservation_item_codes = [r.item_code for r in reservation_items]
+        items = [item for item in items if item.item_code in reservation_item_codes]
+    
+    return items
+
+def get_filtered_reservation_items(conditions, filters):
+    """Get items that have reservations matching the filters"""
+    query = f"""
+        SELECT DISTINCT sre.item_code
+        FROM `tabStock Reservation Entry` sre
+        LEFT JOIN `tabSales Order` so ON so.name = sre.voucher_no AND sre.voucher_type = 'Sales Order'
+        LEFT JOIN `tabPurchase Order` po ON po.name = sre.voucher_no AND sre.voucher_type = 'Purchase Order'
+        WHERE sre.docstatus = 1
+        AND sre.status != 'Cancelled'
+        {conditions}
+    """
+    return frappe.db.sql(query, filters or {}, as_dict=1)
+
+def get_reservation_details(conditions, filters):
+    """Get detailed reservation entries with party information"""
+    query = f"""
         SELECT 
-            po.name as voucher_no,
-            po.supplier,
-            poi.item_code,
-            (poi.stock_qty - poi.received_qty) as ordered_qty
-        FROM `tabPurchase Order` po
-        INNER JOIN `tabPurchase Order Item` poi ON po.name = poi.parent
-        WHERE po.docstatus = 1
-            AND po.status NOT IN ('Closed', 'Completed')
-            AND poi.item_code = %(item_code)s
-            AND (poi.stock_qty - poi.received_qty) > 0
-            {conditions['po_conditions']}
-        ORDER BY po.transaction_date DESC
-    """, {"item_code": item_code, **filters}, as_dict=1)
-
-# Client-side script for handling unreserve button
-@frappe.whitelist()
-def unreserve_stock(item_code, voucher_type, voucher_no):
-    """Unreserve stock from Sales Order using standard ERPNext function"""
-    try:
-        if voucher_type == "Sales Order":
-            so = frappe.get_doc("Sales Order", voucher_no)
-            
-            # Find the item in sales order
-            for item in so.items:
-                if item.item_code == item_code and item.stock_reserved_qty > 0:
-                    # Use standard ERPNext unreserve function
-                    item.unreserve_stock()
-            
-            so.save()
-            frappe.db.commit()
-            
-            return {"message": _("Stock unreserved successfully"), "status": "success"}
-        else:
-            return {"message": _("Unreserve is only applicable for Sales Orders"), "status": "error"}
+            sre.name,
+            sre.item_code,
+            sre.voucher_type,
+            sre.voucher_no,
+            sre.reserved_qty,
+            CASE 
+                WHEN sre.voucher_type = 'Sales Order' THEN so.customer
+                WHEN sre.voucher_type = 'Purchase Order' THEN po.supplier
+                ELSE NULL
+            END as party
+        FROM `tabStock Reservation Entry` sre
+        LEFT JOIN `tabSales Order` so ON so.name = sre.voucher_no AND sre.voucher_type = 'Sales Order'
+        LEFT JOIN `tabPurchase Order` po ON po.name = sre.voucher_no AND sre.voucher_type = 'Purchase Order'
+        WHERE sre.docstatus = 1
+        AND sre.status != 'Cancelled'
+        {conditions}
+        ORDER BY sre.item_code, sre.voucher_no
+    """
     
-    except Exception as e:
-        frappe.log_error(frappe.get_traceback(), _("Unreserve Stock Error"))
-        return {"message": str(e), "status": "error"}
+    return frappe.db.sql(query, filters or {}, as_dict=1)
