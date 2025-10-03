@@ -105,12 +105,15 @@ def sales_invoice_autoname(doc, method=None):
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"INV-COF-{year_suffix}-"
+            doc.name = make_autoname(naming_series + ".#####")
         elif doc.company == "Office Gate Furniture Trading LLC":
-            naming_series = f"INV-OGF-{year_suffix}-"
+            naming_series = f"OG-{year_suffix}-"
+            doc.name = make_autoname(naming_series + ".####")
         else:
             naming_series = f"INV-GEN-{year_suffix}-"
+            doc.name = make_autoname(naming_series + ".#####")
         
-        doc.name = make_autoname(naming_series + ".#####")
+        
         
     except Exception as e:
         frappe.log_error(f"Error in sales_invoice_autoname: {str(e)}")
@@ -151,12 +154,15 @@ def delivery_note_autoname(doc, method=None):
         
         if doc.company == "Capital One Office Furniture":
             naming_series = f"DN-COF-{year_suffix}-"
+            doc.name = make_autoname(naming_series + ".#####")
         elif doc.company == "Office Gate Furniture Trading LLC":
-            naming_series = f"DN-OGF-{year_suffix}-"
+            naming_series = f"DN-OG-{year_suffix}-"
+            doc.name = make_autoname(naming_series + ".####")
         else:
             naming_series = f"DN-GEN-{year_suffix}-"
+            doc.name = make_autoname(naming_series + ".#####")
         
-        doc.name = make_autoname(naming_series + ".#####")
+        
         
     except Exception as e:
         frappe.log_error(f"Error in delivery_note_autoname: {str(e)}")
