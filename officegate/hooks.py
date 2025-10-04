@@ -26,7 +26,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/officegate/css/officegate.css"
-app_include_js = ["/assets/officegate/js/quotations.js","/assets/officegate/js/custom.js",]
+app_include_js = ["/assets/officegate/js/quotations.js","/assets/officegate/js/custom.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/officegate/css/officegate.css"
@@ -206,13 +206,13 @@ doc_events = {
 #     "frappe.utils.print_format.download_pdf": "officegate.pdf_override.download_pdf"
 # }
 
-permission_query_conditions = {
-    "Print Format": "officegate.print_format.get_permission_query_conditions"
-}
+# permission_query_conditions = {
+#     "Print Format": "officegate.print_format.get_permission_query_conditions"
+# }
 
-override_whitelisted_methods = {
-    "frappe.desk.print_report.get_print_formats": "officegate.print_format.get_print_formats"
-}
+# override_whitelisted_methods = {
+#     "frappe.desk.print_report.get_print_formats": "officegate.print_format.get_print_formats"
+# }
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
